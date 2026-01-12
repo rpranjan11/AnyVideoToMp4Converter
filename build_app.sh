@@ -67,26 +67,28 @@ if [ $? -eq 0 ]; then
     
     # Create DMG
     # --volname: Name of the mounted volume
-    # --background: Custom background image
     # --window-pos / --window-size: UI placement
     # --icon-size: Icon size
     # --icon: Placement of App and Applications link
     # --app-drop-link: Path to Applications link
     create-dmg \
         --volname "$PROJECT_NAME Installer" \
-        --background "assets/dmg_background.png" \
         --window-pos 200 120 \
-        --window-size 600 400 \
+        --window-size 500 300 \
         --icon-size 100 \
-        --icon "$PROJECT_NAME.app" 150 150 \
+        --icon "$PROJECT_NAME.app" 125 125 \
         --hide-extension "$PROJECT_NAME.app" \
-        --app-drop-link 450 150 \
+        --app-drop-link 375 125 \
         "dist/$PROJECT_NAME.dmg" \
         "dist/$PROJECT_NAME.app"
 
     if [ $? -eq 0 ]; then
         echo "✅ DMG creation successful!"
         echo "📂 The installer is located in: $(pwd)/dist/$PROJECT_NAME.dmg"
+        
+        # Remove the app bundle as requested by user (keeping only DMG)
+        echo "🧹 Cleaning up app bundle..."
+        rm -rf "dist/$PROJECT_NAME.app"
     else
         echo "❌ DMG creation failed."
         exit 1
