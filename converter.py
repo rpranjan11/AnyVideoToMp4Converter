@@ -62,7 +62,6 @@ class Api:
         self.files = []
         self._update_frontend()
 
-    @webview.expose
     def locate_file(self, path):
         if os.path.exists(path):
             subprocess.run(['open', '-R', path])
