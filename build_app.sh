@@ -54,9 +54,44 @@ python3 -m PyInstaller \
     "$CONVERTER_SCRIPT"
 
 if [ $? -eq 0 ]; then
-    echo "✅ Build successful!"
+    echo "✅ App build successful!"
     echo "📂 The app is located in: $(pwd)/dist/$PROJECT_NAME.app"
+    
+    echo "📀 Creating DMG Installer..."
+    
+    # Ensure dist exists
+    mkdir -p dist
+    
+    # Remove old DMG if exists
+    rm -f "dist/$PROJECT_NAME.dmg"
+    
+    # Create DMG
+    # --volname: Name of the mounted volume
+    # --background: Custom background image
+    # --window-pos / --window-size: UI placement
+    # --icon-size: Icon size
+    # --icon: Placement of App and Applications link
+    # --app-drop-link: Path to Applications link
+    create-dmg \
+        --volname "$PROJECT_NAME Installer" \
+        --background "assets/dmg_background.png" \
+        --window-pos 200 120 \
+        --window-size 600 400 \
+        --icon-size 100 \
+        --icon "$PROJECT_NAME.app" 150 150 \
+        --hide-extension "$PROJECT_NAME.app" \
+        --app-drop-link 450 150 \
+        "dist/$PROJECT_NAME.dmg" \
+        "dist/$PROJECT_NAME.app"
+
+    if [ $? -eq 0 ]; then
+        echo "✅ DMG creation successful!"
+        echo "📂 The installer is located in: $(pwd)/dist/$PROJECT_NAME.dmg"
+    else
+        echo "❌ DMG creation failed."
+        exit 1
+    fi
 else
-    echo "❌ Build failed."
+    echo "❌ App build failed."
     exit 1
 fi
