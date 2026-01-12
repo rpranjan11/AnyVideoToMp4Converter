@@ -1,3 +1,4 @@
+import sys
 import os
 import subprocess
 import threading
@@ -61,9 +62,10 @@ class Api:
         self.files = []
         self._update_frontend()
 
+    @webview.expose
     def locate_file(self, path):
-        # Open in Finder and select file
-        subprocess.run(['open', '-R', path])
+        if os.path.exists(path):
+            subprocess.run(['open', '-R', path])
 
     def start_conversion(self):
         if not self.files or self.is_processing:
@@ -189,7 +191,53 @@ class Api:
         if self._window:
             self._window.evaluate_js(f"updateProcessingState({str(is_processing).lower()})")
 
+def check_and_move_to_applications():
+    """Detect if running from DMG and offer to move to Applications."""
+    if not getattr(sys, 'frozen', False):
+        return # Not running as a bundled app
+
+    # Only run on macOS
+    if sys.platform != 'darwin':
+        return
+
+    current_path = os.path.dirname(sys.executable)
+    # Check if we are inside a volume that looks like a DMG mount
+    if '/Volumes/' in current_path:
+        # We use osascript for the prompt to avoid needing webview to start yet
+        msg = "Would you like to move AnyVideoToMp4Converter to your Applications folder and eject the installer disk?"
+        script = f'''
+        set theQuestion to display dialog "{msg}" buttons {{"Later", "Move to Applications"}} default button 2 with icon note
+        if button returned of theQuestion is "Move to Applications" then
+            return "move"
+        else
+            return "later"
+        end if
+        '''
+        try:
+            result = subprocess.check_output(['osascript', '-e', script]).decode().strip()
+            if "move" in result:
+                dest = "/Applications/AnyVideoToMp4Converter.app"
+                # Find app bundle root
+                app_bundle_path = current_path
+                while app_bundle_path != '/' and not app_bundle_path.endswith('.app'):
+                     app_bundle_path = os.path.dirname(app_bundle_path)
+                
+                if app_bundle_path.endswith('.app'):
+                    # Perform the copy
+                    subprocess.run(['cp', '-R', app_bundle_path, "/Applications/"])
+                    # Open the new app
+                    subprocess.run(['open', dest])
+                    # Try to eject the DMG
+                    volume_path = '/'.join(app_bundle_path.split('/')[:3])
+                    if volume_path.startswith('/Volumes/'):
+                        subprocess.run(['hdiutil', 'eject', volume_path])
+                    sys.exit(0)
+        except Exception as e:
+            print(f"Move error: {e}")
+
 if __name__ == '__main__':
+    # Check for installation before starting any UI
+    check_and_move_to_applications()
     api = Api()
     # Find the HTML file path
     current_dir = os.path.dirname(os.path.abspath(__file__))
