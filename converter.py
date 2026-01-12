@@ -200,44 +200,61 @@ def check_and_move_to_applications():
     if sys.platform != 'darwin':
         return
 
-    current_path = os.path.dirname(sys.executable)
-    # Check if we are inside a volume that looks like a DMG mount
-    if '/Volumes/' in current_path:
-        # We use osascript for the prompt to avoid needing webview to start yet
-        msg = "Would you like to move AnyVideoToMp4Converter to your Applications folder and eject the installer disk?"
-        script = f'''
-        set theQuestion to display dialog "{msg}" buttons {{"Later", "Move to Applications"}} default button 2 with icon note
-        if button returned of theQuestion is "Move to Applications" then
-            return "move"
-        else
-            return "later"
-        end if
-        '''
-        try:
-            result = subprocess.check_output(['osascript', '-e', script]).decode().strip()
-            if "move" in result:
-                dest = "/Applications/AnyVideoToMp4Converter.app"
-                # Find app bundle root
-                app_bundle_path = current_path
-                while app_bundle_path != '/' and not app_bundle_path.endswith('.app'):
-                     app_bundle_path = os.path.dirname(app_bundle_path)
+    current_exec = sys.executable
+    # PyInstaller bundled path: .../AnyVideoToMp4Converter.app/Contents/MacOS/AnyVideoToMp4Converter
+    if '/Volumes/' not in current_exec:
+        return
+
+    # Use a separate process for the dialog to avoid blocking main thread if it hangs
+    msg = "Would you like to move AnyVideoToMp4Converter to your Applications folder for faster access and to eject the installer disk?"
+    script = f'''
+    set theQuestion to display dialog "{msg}" buttons {{"Later", "Move to Applications"}} default button 2 with icon note
+    if button returned of theQuestion is "Move to Applications" then
+        return "move"
+    else
+        return "later"
+    end if
+    '''
+    try:
+        # We check translocation too - if the path looks like /private/var/folders.../AppTranslocation
+        # but the request was specifically about DMG, so we stick to /Volumes/ check first.
+        result = subprocess.check_output(['osascript', '-e', script], timeout=30).decode().strip()
+        if "move" in result:
+            dest_dir = "/Applications"
+            dest_app = os.path.join(dest_dir, "AnyVideoToMp4Converter.app")
+            
+            # Find app bundle root
+            app_bundle_path = current_exec
+            while app_bundle_path != '/' and not app_bundle_path.endswith('.app'):
+                 app_bundle_path = os.path.dirname(app_bundle_path)
+            
+            if app_bundle_path.endswith('.app'):
+                # Check if already exists in Applications
+                if os.path.exists(dest_app):
+                    # Overwrite or ask? For now just overwrite to simplify
+                    subprocess.run(['rm', '-rf', dest_app])
                 
-                if app_bundle_path.endswith('.app'):
-                    # Perform the copy
-                    subprocess.run(['cp', '-R', app_bundle_path, "/Applications/"])
-                    # Open the new app
-                    subprocess.run(['open', dest])
-                    # Try to eject the DMG
-                    volume_path = '/'.join(app_bundle_path.split('/')[:3])
-                    if volume_path.startswith('/Volumes/'):
-                        subprocess.run(['hdiutil', 'eject', volume_path])
-                    sys.exit(0)
-        except Exception as e:
-            print(f"Move error: {e}")
+                # Perform the copy
+                subprocess.run(['cp', '-R', app_bundle_path, dest_dir])
+                # Open the new app
+                subprocess.run(['open', dest_app])
+                
+                # Try to eject the DMG
+                volume_path = '/'.join(app_bundle_path.split('/')[:3])
+                if volume_path.startswith('/Volumes/'):
+                    subprocess.run(['hdiutil', 'detach', volume_path], stderr=subprocess.DEVNULL)
+                
+                sys.exit(0)
+    except Exception as e:
+        # Silently fail and continue to app lunch if anything goes wrong with the helper
+        print(f"Installation helper info: {e}")
 
 if __name__ == '__main__':
-    # Check for installation before starting any UI
-    check_and_move_to_applications()
+    # Try to check for installation but don't let it crash the app
+    try:
+        check_and_move_to_applications()
+    except Exception as e:
+        print(f"Launch helper failed: {e}")
     api = Api()
     # Find the HTML file path
     current_dir = os.path.dirname(os.path.abspath(__file__))

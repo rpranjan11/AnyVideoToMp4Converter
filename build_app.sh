@@ -86,9 +86,15 @@ if [ $? -eq 0 ]; then
         echo "✅ DMG creation successful!"
         echo "📂 The installer is located in: $(pwd)/dist/$PROJECT_NAME.dmg"
         
-        # Remove the app bundle as requested by user (keeping only DMG)
-        echo "🧹 Cleaning up app bundle..."
-        rm -rf "dist/$PROJECT_NAME.app"
+        # Zip the app bundle for direct download as well
+        echo "📦 Zipping app bundle for release..."
+        cd dist
+        zip -r "$PROJECT_NAME.zip" "$PROJECT_NAME.app"
+        cd ..
+        echo "📂 ZIP archive created: $(pwd)/dist/$PROJECT_NAME.zip"
+        
+        # User requested to include both, so we keep the .app as well
+        # but zipping is better for web distribution.
     else
         echo "❌ DMG creation failed."
         exit 1

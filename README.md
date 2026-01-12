@@ -17,8 +17,9 @@ A modern, fast, and "smart" video converter for macOS that intelligently transco
 ## 💾 Installation
 
 1. Go to the [Releases](https://github.com/rpranjan11/AnyVideoToMp4Converter/releases) page.
-2. Download the latest `AnyVideoToMp4Converter.dmg`.
-3. Open the DMG and drag the application to your **Applications** folder.
+2. Download either the **AnyVideoToMp4Converter.dmg** (Recommended) or the **AnyVideoToMp4Converter.zip**.
+3. **If using DMG**: Open it and drag the app to your **Applications** folder.
+4. **If using ZIP**: Extract it and move the app to your **Applications** folder.
 
 ### 🛡️ How to Bypass Security Warnings ("Not Opened" / "Malware")
 Since the app is not signed with an Apple Developer ID, macOS will block it by default. Follow these steps:
