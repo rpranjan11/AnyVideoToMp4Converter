@@ -21,12 +21,15 @@ A modern, fast, and "smart" video converter for macOS that intelligently transco
 3. Open the DMG and drag the application to your **Applications** folder.
 
 ### 🛡️ How to Bypass Security Warnings ("Not Opened" / "Malware")
-Since the app is not signed with an Apple Developer ID, macOS will block it by default. Follow these steps to open it:
+Since the app is not signed with an Apple Developer ID, macOS will block it by default. Follow these steps:
 
-1. **Right-click** (or Control-click) the **AnyVideoToMp4Converter** icon in your **Applications** folder.
-2. Select **Open** from the menu.
-3. A dialog will appear saying "Apple could not verify...". Click the **Open** button that now appears in the prompt.
-4. You only need to do this once. Future opens will work normally.
+1. **Attempt to launch** the app once. When the warning appears, click **Done**.
+2. Open **System Settings** -> **Privacy & Security**.
+3. Scroll down to the **Security** section.
+4. You will see a notice saying: *"AnyVideoToMp4Converter was blocked..."*.
+5. Click **Open Anyway**, enter your password, and confirm **Open**.
+6. **Alternative**: If you are comfortable with the Terminal, run:
+   `xattr -cr /Applications/AnyVideoToMp4Converter.app`
 
 ## 🛠 Usage
 
