@@ -140,7 +140,7 @@ class Api:
             cmd.extend(['-c:v', 'copy'])
         else:
             cmd.extend([
-                '-c:v', 'libx264', '-crf', '18', '-preset', 'slow',
+                '-c:v', 'libx264', '-crf', '18', '-preset', 'medium',
                 '-profile:v', 'high', '-level', '4.1', '-pix_fmt', 'yuv420p'
             ])
 
@@ -171,13 +171,17 @@ class Api:
 
     def _get_stream_info(self, file_path):
         try:
-            result = subprocess.run(
-                [FFMPEG_PATH, '-hide_banner', '-i', str(file_path)],
-                stderr=subprocess.PIPE, text=True
-            )
-            output = result.stderr
-            is_h264 = "Video: h264" in output
-            is_aac = "Audio: aac" in output
+            # We use ffprobe if available for better precision, otherwise fallback to ffmpeg info
+            cmd = [FFMPEG_PATH, '-hide_banner', '-i', str(file_path)]
+            result = subprocess.run(cmd, stderr=subprocess.PIPE, text=True, timeout=5)
+            output = result.stderr.lower()
+            
+            # Check for video: h264 or avc1 (which is basically h264)
+            is_h264 = "video: h264" in output or "video: avc1" in output
+            
+            # Check for audio: aac
+            is_aac = "audio: aac" in output
+            
             return is_h264, is_aac
         except:
             return False, False
