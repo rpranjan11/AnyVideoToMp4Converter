@@ -36,4 +36,5 @@ A modern, fast, and "smart" video converter for macOS that intelligently transco
 - **Bundler**: PyInstaller
 
 ---
-Developed by Ranjan Ram Pratap
+Developed by **Ranjan Ram Pratap**
+Explore more projects at [theranjana.com](https://theranjana.com)
