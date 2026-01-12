@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.spec
+
+# macOS
+.DS_Store
+
+# Build artifacts
+build/
+dist/
+
+# Local environment
+.env
+.venv
+env/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt

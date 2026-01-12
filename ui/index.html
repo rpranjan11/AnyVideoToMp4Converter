@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AnyVideoToMp4Converter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0d0d12;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, #888);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .controls {
+            padding: 20px 24px;
+            display: flex;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        button {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary { background: var(--accent-color); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+        .btn-primary:active { transform: translateY(0); }
+
+        .btn-secondary { background: var(--card-bg); color: var(--text-primary); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.1); }
+
+        .btn-danger { background: rgba(239, 68, 68, 0.15); color: var(--error); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .btn-danger:hover { background: rgba(239, 68, 68, 0.25); }
+
+        .btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .main-content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .file-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .file-item {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .file-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-width: 70%;
+        }
+
+        .file-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-path {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-pending { background: rgba(156, 163, 175, 0.15); color: #9ca3af; }
+        .status-processing { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .status-done { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .status-error { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+        .locate-btn {
+            background: none;
+            border: none;
+            color: var(--accent-color);
+            font-size: 0.8rem;
+            text-decoration: underline;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .empty-state {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-secondary);
+            gap: 16px;
+            text-align: center;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            opacity: 0.2;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>AnyVideoToMp4Converter</h1>
+        <div id="overall-status" style="font-size: 0.8rem; color: var(--text-secondary);">Ready</div>
+    </div>
+
+    <div class="controls">
+        <button class="btn-primary" onclick="window.pywebview.api.select_files()">
+            <span>+</span> Add Files
+        </button>
+        <button id="start-btn" class="btn-secondary" onclick="window.pywebview.api.start_conversion()">
+            Start Conversion
+        </button>
+        <button id="stop-btn" class="btn-danger" onclick="window.pywebview.api.stop_conversion()" disabled>
+            Stop
+        </button>
+        <button class="btn-secondary" onclick="window.pywebview.api.clear_list()">
+            Clear All
+        </button>
+    </div>
+
+    <div class="main-content">
+        <div id="file-list-container" class="file-list">
+            <div class="empty-state">
+                <div class="empty-state-icon">🎬</div>
+                <p>No files selected.<br>Add some video files to get started.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateFileList(files) {
+            const container = document.getElementById('file-list-container');
+            if (files.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎬</div>
+                        <p>No files selected.<br>Add some video files to get started.</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = files.map((file, index) => `
+                <div class="file-item" id="file-${index}">
+                    <div class="file-info">
+                        <div class="file-name" title="${file.name}">${file.name}</div>
+                        <div class="file-path" title="${file.path}">${file.path}</div>
+                    </div>
+                    <div class="file-status">
+                        ${file.status === 'done' ? `<button class="locate-btn" onclick="window.pywebview.api.locate_file('${file.path}')">Locate</button>` : ''}
+                        <span class="status-badge status-${file.status}">${file.status_text}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setButtonsState(processing) {
+            document.getElementById('start-btn').disabled = processing;
+            document.getElementById('stop-btn').disabled = !processing;
+            document.getElementById('overall-status').innerText = processing ? 'Processing...' : 'Ready';
+        }
+
+        // Exposed functions for Python to call
+        window.updateUI = (files) => {
+            updateFileList(files);
+        };
+
+        window.updateProcessingState = (isProcessing) => {
+            setButtonsState(isProcessing);
+        };
+    </script>
+</body>
+</html>
