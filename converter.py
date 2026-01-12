@@ -6,12 +6,25 @@ import webview
 from pathlib import Path
 
 # --- CONFIGURATION ---
-FFMPEG_PATH = '/opt/homebrew/bin/ffmpeg'
-if not os.path.exists(FFMPEG_PATH):
+def get_ffmpeg_path():
+    # Check if we are running in a bundled app (PyInstaller)
+    if hasattr(sys, '_MEIPASS'):
+        bundled_ffmpeg = os.path.join(sys._MEIPASS, 'bin', 'ffmpeg')
+        if os.path.exists(bundled_ffmpeg):
+            return bundled_ffmpeg
+    
+    # Fallback to local bin folder (for development)
+    local_bin = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'ffmpeg')
+    if os.path.exists(local_bin):
+        return local_bin
+
+    # Fallback to system path
     try:
-        FFMPEG_PATH = subprocess.check_output(['which', 'ffmpeg']).decode().strip()
+        return subprocess.check_output(['which', 'ffmpeg']).decode().strip()
     except:
-        FFMPEG_PATH = 'ffmpeg'
+        return '/opt/homebrew/bin/ffmpeg'
+
+FFMPEG_PATH = get_ffmpeg_path()
 
 CPU_THREADS = '10'
 CPU_PRIORITY = '19'
