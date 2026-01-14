@@ -139,9 +139,12 @@ class Api:
         if is_video_h264:
             cmd.extend(['-c:v', 'copy'])
         else:
+            # GPU Acceleration: Use Apple Silicon hardware encoder
             cmd.extend([
-                '-c:v', 'libx264', '-crf', '18', '-preset', 'medium',
-                '-profile:v', 'high', '-level', '4.1', '-pix_fmt', 'yuv420p'
+                '-c:v', 'h264_videotoolbox',
+                '-q:v', '65',              # High quality (1-100, 65 is roughly crf 18-20)
+                '-pix_fmt', 'yuv420p',     # Ensure wide compatibility
+                '-allow_sw', '1'           # Allow software fallback if HW is busy/unavailable
             ])
 
         if is_audio_aac:

@@ -10,27 +10,25 @@ echo "🚀 Building $PROJECT_NAME..."
 # Ensure we are in the correct directory
 cd "$(dirname "$0")"
 
-# Download and combine FFmpeg if missing
+# Download FFmpeg (Apple Silicon Only)
 if [ ! -f "bin/ffmpeg" ]; then
-    echo "⬇️ Downloading FFmpeg binaries (Universal)..."
+    echo "⬇️ Downloading FFmpeg for Apple Silicon..."
     mkdir -p bin && cd bin
-    curl -L https://evermeet.cx/ffmpeg/ffmpeg-8.0.1.zip -o ffmpeg-intel.zip
-    curl -L https://www.osxexperts.net/ffmpeg80arm.zip -o ffmpeg-arm.zip
-    unzip -o ffmpeg-intel.zip && mv ffmpeg ffmpeg-intel
-    unzip -o ffmpeg-arm.zip && mv ffmpeg ffmpeg-arm
+    curl -L "https://www.osxexperts.net/ffmpeg80arm.zip" -o ffmpeg-arm.zip
+    unzip -o ffmpeg-arm.zip
+    mv ffmpeg ffmpeg_arm64 # Rename to avoid conflicts
     rm -f *.zip LICENSE README.txt
-    lipo -create ffmpeg-intel ffmpeg-arm -output ffmpeg
-    rm -f ffmpeg-intel ffmpeg-arm
+    mv ffmpeg_arm64 ffmpeg
     chmod +x ffmpeg
     cd ..
-    echo "✅ Universal FFmpeg ready."
+    echo "✅ FFmpeg for Apple Silicon ready."
 fi
 
 # Configuration
 PROJECT_NAME="AnyVideoToMp4Converter"
 CONVERTER_SCRIPT="converter.py"
 
-echo "🚀 Building $PROJECT_NAME (WebUI version)..."
+echo "🚀 Building $PROJECT_NAME (Apple Silicon Native)..."
 
 # Ensure we are in the correct directory
 cd "$(dirname "$0")"
@@ -42,13 +40,13 @@ rm -rf build dist AnyVideoToMp4Converter.spec
 # --windowed: Do not open a console window
 # --add-data: Include the UI folder and bin folder (with ffmpeg)
 # --onefile: Bundle into a single executable (inside the app)
-# --target-arch: Build for both Intel and Apple Silicon
+# --target-arch: Build for arm64 only
 python3 -m PyInstaller \
     --windowed \
     --onefile \
     --add-data "ui:ui" \
     --add-data "bin:bin" \
-    --target-arch universal2 \
+    --target-arch arm64 \
     --name "$PROJECT_NAME" \
     --clean \
     "$CONVERTER_SCRIPT"

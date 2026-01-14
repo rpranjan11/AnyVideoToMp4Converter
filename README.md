@@ -6,13 +6,13 @@ A modern, fast, and "smart" video converter for macOS that intelligently transco
 
 ## 🚀 Key Features
 
-- **Smart Transcoding**: Copies H.264 video and AAC audio streams without re-encoding whenever possible (lossless!).
-- **High-Quality Conversion**: Uses `libx264` (CRF 18) for superior quality when transcoding is required.
-- **Universal Binary**: Runs natively on both Apple Silicon (M1/M2/M3) and Intel Macs.
-- **Self-Contained**: Bundles its own FFmpeg binary; no external dependencies required.
+- **Apple Silicon Native**: Built exclusively for **M1, M2, M3, and M4** chips (arm64) for maximum performance.
+- **GPU Optimized**: Uses the **Hardware Media Engines** (VideoToolbox) for blazing fast transcoding.
+- **Smart Transcoding**: Copies H.264/AAC streams whenever possible for 3-10 second conversions.
+- **High Quality**: Uses robust hardware encoding settings equivalent to high-quality software presets.
+- **Self-Contained**: Bundles its own optimized FFmpeg binary; no external dependencies.
 - **Modern UI**: Sleek dark-mode interface with glassmorphism effects.
 - **Batch Processing**: Convert multiple files in sequence with a single click.
-- **Real-time Status**: Track the progress and status of each conversion.
 
 ## 💾 Installation
 
